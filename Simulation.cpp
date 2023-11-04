@@ -30,9 +30,11 @@ Button::~Button(){
     delete this->buttonArea;
 };
 
-bool Button::setPos(sf::Vector2i pos){
+bool Button::setPos(sf::Vector2f pos){
     this->x = pos.x;
     this->y = pos.y;
+
+    this->buttonArea->setPosition(pos);
 
     //indicate success
     return true;
@@ -42,8 +44,9 @@ sf::Vector2i Button::getPos(){
     return sf::Vector2i(this->x,this->y);
 }
 
-bool Button::isClicked(sf::Vector2i pos){
-    return ( (pos.x == this->x) && (pos.y == this->y) );
+bool Button::isClicked(sf::Vector2f pos){
+    std::cout << this->x << ',' << this->y << std::endl;
+    return ( (pos.x>=this->x) && (pos.x<=(this->x+this->width) ) && (pos.y>=this->y)&& (pos.y<=(this->y+this->height) ) );
 }
 
 
@@ -129,7 +132,8 @@ void Simulation::pollEvents(){
                 //get the Button of the event
                 sf::Mouse::Button btn = mouseEvent.button;
                 //if left button clicked and window button clicked
-                if( (btn == sf::Mouse::Button::Left) ){//&& (this->button.isClicked(sf::Vector2i(mouseEvent.x, mouseEvent.y) ))){
+                std::cout << mouseEvent.x << ',' << mouseEvent.y << std::endl;
+                if( (btn == sf::Mouse::Button::Left) && (this->button.isClicked(sf::Vector2f(mouseEvent.x, mouseEvent.y) ))){
                     std::cout << this->button.getText() << std::endl;
                 }
         }
@@ -145,6 +149,7 @@ void Simulation::update(){
 void Simulation::render(){
     this->window->clear(sf::Color::Blue);
 
+    this->button.setPos(sf::Vector2f(0,30));
     this->window->draw(this->button.getButtonArea());
 
     this->window->display();

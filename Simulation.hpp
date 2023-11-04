@@ -41,11 +41,11 @@ class Button{
         
         ~Button();
         // State functions
-        bool setPos(sf::Vector2i pos);
+        bool setPos(sf::Vector2f pos);
 
         sf::Vector2i getPos();
 
-        bool isClicked(sf::Vector2i pos);
+        bool isClicked(sf::Vector2f pos);
 
         void onClick();
 
