@@ -6,23 +6,35 @@
 
 #include <string>
 #include <functional>
+#include <iostream>
+
+
+namespace sm{
+
+
+//template <typename ...CallbackArgs>
+//using Callback = void(*)(CallbackArgs...);
 
 
 class Button{
     private:
-        static unsigned short width;
-        static unsigned short height;
+        unsigned short width;
+        unsigned short height;
 
         sf::RectangleShape* buttonArea;
         std::string text;
         int x,y;
-        
-        //std::function<void()> callback;
+
+        //Callback<> callback;
+        using Callback = void(*)();
+        Callback callback;
 
     public:
         //Constructors and Destructors
-        template <typename ...Args>
-        Button(std::string text,std::function<void()> callback ,Args... args);
+        Button();
+
+        //template <typename ...CallbackArgs>
+        Button(std::string text,Callback cb);
 
         /*template<typename ...Args>
         Button(std::string, sf::Font& font, Args... args);*/
@@ -37,11 +49,15 @@ class Button{
 
         void onClick();
 
+        sf::RectangleShape getButtonArea();
+
+        std::string getText();
+
 };
 
 
 
-class Toolbar{
+/*class Toolbar{
     private:
         Button buttons[12];
         sf::RectangleShape toolbarArea;
@@ -53,25 +69,38 @@ class Toolbar{
 
         
 
-};
+};*/
 
 
 
 
-class Program{
+class Simulation{
     private:
         sf::RenderWindow* window;
         sf::VideoMode VideoMode;
-        
+
         sf::Event event;
 
-        Toolbar toolbar;
-        
+        //Toolbar toolbar;
+        Button button;
 
     public:
+        //Constructors and Destructors
+        Simulation();
+
+        ~Simulation();
+
+
         void initVars();
 
         void initWindow();
 
+        bool isRunning();
 
+        void pollEvents();
+
+        void update();
+
+        void render();
 };
+}
