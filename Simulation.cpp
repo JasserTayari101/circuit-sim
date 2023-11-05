@@ -223,12 +223,16 @@ Simulation::~Simulation(){
 //Simulation Logic functions
 
 void Simulation::addInput(Input* input){
+    input->getSprite()->setScale(this->scaleX, this->scaleY);
+
     this->inputs.push_back(input);
 }
 
 void Simulation::addGate(Gate* gate, unsigned short level){
-    if(level>=1)
+    if(level>=1){
+        gate->getSprite()->setScale(this->scaleX, this->scaleY);
         this->gates[level-1].push_back(gate);
+    }
 }
 
 // Scale all components either bigger or smaller
@@ -317,9 +321,9 @@ void Simulation::pollEvents(){
                 // Handle Zoom In/out (+/-)
                 else if(this->event.key.code == sf::Keyboard::Add || this->event.key.code == sf::Keyboard::Subtract ){
                     if(this->event.key.code == sf::Keyboard::Add)
-                        this->scaleBy(0.1,0.1);
+                        this->scaleBy(0.05,0.05);
                     else
-                        this->scaleBy(-0.1,-0.1);
+                        this->scaleBy(-0.05,-0.05);
                 }
 
                 break;
@@ -354,6 +358,7 @@ void Simulation::render(){
     //---- Draw Inputs ----
     
     // used to handle dynamic margin when zoom in/out
+    float scaleX;
     float marginY = this->toolbar->getSize().y + 10;
     
     for(unsigned short i=0; i<(this->inputs.size()); ++i ){
@@ -364,12 +369,12 @@ void Simulation::render(){
         //update margin 
         marginY += 64*sprite->getScale().y + 10;
 
+        scaleX = sprite->getScale().x;
     }
 
 
     // Draw Gates
-    float marginX = 100;
-    float scaleX;
+    float marginX = 100*scaleX;
 
     for(unsigned short lvl=0; lvl<(this->gates.size()); ++lvl){
         marginY = this->toolbar->getSize().y + 10;
