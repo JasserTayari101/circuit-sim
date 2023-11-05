@@ -82,6 +82,10 @@ class Gate{
         sf::Sprite* getSprite();
 
         GateType getType();
+
+        //  highlight or dehighlight texture based on flag
+        sf::Sprite* highlight(bool flag);
+
     private:
         GateType type;
 
@@ -108,7 +112,11 @@ class Input{
 
         bool link(Gate* gate);
 
+        bool getValue();
+        
         sf::Sprite* getSprite();
+        
+        sf::Sprite* highlight(bool flag);
 };
 
 class Output{
@@ -171,6 +179,8 @@ class Simulation{
         void addGate(Gate* gate, unsigned short level);
 
         void scaleBy(float deltaX, float deltaY);
+
+        void unHighlightOld();
 
         void simulate();
 

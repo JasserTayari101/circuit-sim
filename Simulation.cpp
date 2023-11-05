@@ -95,8 +95,25 @@ bool Input::link(Gate* gate){
     return true;
 }
 
+bool Input::getValue(){
+    return this->value;
+}
+
 sf::Sprite* Input::getSprite(){
     return &(this->sprite);
+}
+
+sf::Sprite* Input::highlight(bool flag){
+    std::string suffix = flag? "-highlight": "";
+
+    if(this->value)
+        this->texture.loadFromFile("assets/circle-1"+suffix+".png");
+    else
+        this->texture.loadFromFile("assets/circle-0"+suffix+".png");
+
+    this->sprite.setTexture(this->texture);
+
+   return &(this->sprite);
 }
 
 
@@ -158,7 +175,29 @@ Gate::GateType Gate::getType(){
     return this->type;
 }
 
+//  change the gate's texture and sprite and return the sprite pointer
+sf::Sprite* Gate::highlight(bool flag){
+    std::string suffix = flag? "-highlight": "";
 
+    switch(this->type){
+        case NOT:
+            this->texture.loadFromFile("assets/not-gate"+suffix+".png");
+            break;
+        case AND:
+            this->texture.loadFromFile("assets/and-gate"+suffix+".png");
+            break;
+        case OR:
+            this->texture.loadFromFile("assets/or-gate"+suffix+".png");
+            break;
+        case XOR:
+            this->texture.loadFromFile("assets/xor-gate"+suffix+".png");
+            break;
+    
+        this->sprite.setTexture(this->texture);
+    }
+
+   return &(this->sprite);
+}
 
 
 
@@ -262,6 +301,14 @@ void Simulation::scaleBy(float deltaX, float deltaY){
 
 }
 
+void Simulation::unHighlightOld(){
+    if(this->navigationLevel == 0)
+        this->inputs[this->selectLevel]->highlight(false);
+    else{
+        this->gates[navigationLevel-1][selectLevel]->highlight(false);
+    }
+}
+
 
 
 bool Simulation::isRunning(){
@@ -273,7 +320,7 @@ unsigned short Simulation::getCurrentLength(){
         return this->inputs.size();
     else{
         //return length of this column
-        return this->gates[navigationLevel].size();
+        return this->gates[navigationLevel-1].size();
     }
 }
 
@@ -322,19 +369,26 @@ void Simulation::pollEvents(){
                 // Handle Arrow for Navigation
                 else if(this->event.key.code == sf::Keyboard::Left || this->event.key.code == sf::Keyboard::Right){
                     if(this->event.key.code == sf::Keyboard::Left && (this->navigationLevel>0) ){
+                        this->unHighlightOld();
+
                         this->navigationLevel--;
                         this->selectLevel = 0;
                     }
                     else if(this->event.key.code == sf::Keyboard::Right && (this->navigationLevel< this->depth ) ){
+                        this->unHighlightOld();
+
                         this->navigationLevel++;
                         this->selectLevel = 0;
                     }
                 }
                 //Handle Arrows for Selection
                 else if(this->event.key.code == sf::Keyboard::Up || this->event.key.code == sf::Keyboard::Down){
-                    if(this->event.key.code == sf::Keyboard::Up && this->selectLevel>0)
+                    if(this->event.key.code == sf::Keyboard::Up && this->selectLevel>0){
+                        this->unHighlightOld();
                         this->selectLevel--;
-                    else if(this->event.key.code == sf::Keyboard::Down && (this->selectLevel< this->getCurrentLength())){
+                    }
+                    else if(this->event.key.code == sf::Keyboard::Down && (this->selectLevel< (this->getCurrentLength()-1) )){
+                        this->unHighlightOld();
                         this->selectLevel++;
                     }
                     
@@ -385,11 +439,11 @@ void Simulation::render(){
     float marginY = this->toolbar->getSize().y + 10;
     
     for(unsigned short i=0; i<(this->inputs.size()); ++i ){
-        sf::Sprite* sprite = inputs[i]->getSprite();
+        sf::Sprite* sprite = this->inputs[i]->getSprite();
         sprite->setPosition(0, marginY);
         //  in case it is selected components we highlight it
         if(this->navigationLevel == 0 && this->selectLevel == i)
-            sprite->setColor(sf::Color::White);
+            sprite = this->inputs[i]->highlight(true);
 
         this->window->draw(*sprite);
         //update margin 
@@ -412,7 +466,7 @@ void Simulation::render(){
 
             // heighlight selection
             if(this->navigationLevel == (lvl+1)  &&  (this->selectLevel == counter) )
-                sprite->setColor(sf::Color::Black);
+                sprite = gate->highlight(true);
 
 
             this->window->draw(*sprite);
