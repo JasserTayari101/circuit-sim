@@ -351,25 +351,44 @@ void Simulation::render(){
     this->window->clear(sf::Color(34, 34, 34));
     this->window->draw(*(this->toolbar) );
 
-    //Draw Inputs
+    //---- Draw Inputs ----
+    
+    // used to handle dynamic margin when zoom in/out
+    float marginY = this->toolbar->getSize().y + 10;
+    
     for(unsigned short i=0; i<(this->inputs.size()); ++i ){
         sf::Sprite* sprite = inputs[i]->getSprite();
-        sprite->setPosition(0, 70*(i+1) );
-
+        sprite->setPosition(0, marginY);
         this->window->draw(*sprite);
+
+        //update margin 
+        marginY += 64*sprite->getScale().y + 10;
+
     }
 
 
     // Draw Gates
+    float marginX = 100;
+    float scaleX;
+
     for(unsigned short lvl=0; lvl<(this->gates.size()); ++lvl){
+        marginY = this->toolbar->getSize().y + 10;
+
         unsigned short counter = 1;
         for(Gate* gate: this->gates[lvl]){
             sf::Sprite* sprite = gate->getSprite();
-            sprite->setPosition(100*(lvl+1), 50*counter);
+            sprite->setPosition(marginX, marginY);
             this->window->draw(*sprite);
-            
+
+            //update margin
+            marginY+= 64*sprite->getScale().y + 10;
+
+            scaleX = sprite->getScale().x ;
+
             ++counter;
         }
+
+        marginX+= 64*scaleX + 10;
     }
 
 
