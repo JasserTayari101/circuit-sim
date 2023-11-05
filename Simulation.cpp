@@ -192,6 +192,7 @@ void Simulation::initVars(){
     this->scaleY = 1;
 
     this->navigationLevel = 0;
+    this->selectLevel = 0;
 
     this->toolbar = new sf::RectangleShape(sf::Vector2f(this->VideoMode.width,0.08*this->VideoMode.height));
     this->toolbar->setFillColor(sf::Color::Black);
@@ -267,7 +268,14 @@ bool Simulation::isRunning(){
     return this->window->isOpen();
 }
 
-
+unsigned short Simulation::getCurrentLength(){
+    if(this->navigationLevel == 0)
+        return this->inputs.size();
+    else{
+        //return length of this column
+        return this->gates[navigationLevel].size();
+    }
+}
 
 
 
@@ -313,10 +321,25 @@ void Simulation::pollEvents(){
                 }
                 // Handle Arrow for Navigation
                 else if(this->event.key.code == sf::Keyboard::Left || this->event.key.code == sf::Keyboard::Right){
-                    if(this->event.key.code == sf::Keyboard::Left && (this->navigationLevel>0) )
+                    if(this->event.key.code == sf::Keyboard::Left && (this->navigationLevel>0) ){
                         this->navigationLevel--;
-                    else if(this->event.key.code == sf::Keyboard::Right && (this->navigationLevel< this->depth ) )
+                        this->selectLevel = 0;
+                    }
+                    else if(this->event.key.code == sf::Keyboard::Right && (this->navigationLevel< this->depth ) ){
                         this->navigationLevel++;
+                        this->selectLevel = 0;
+                    }
+                }
+                //Handle Arrows for Selection
+                else if(this->event.key.code == sf::Keyboard::Up || this->event.key.code == sf::Keyboard::Down){
+                    if(this->event.key.code == sf::Keyboard::Up && this->selectLevel>0)
+                        this->selectLevel--;
+                    else if(this->event.key.code == sf::Keyboard::Down && (this->selectLevel< this->getCurrentLength())){
+                        this->selectLevel++;
+                    }
+                    
+
+
                 }
                 // Handle Zoom In/out (+/-)
                 else if(this->event.key.code == sf::Keyboard::Add || this->event.key.code == sf::Keyboard::Subtract ){
@@ -364,8 +387,11 @@ void Simulation::render(){
     for(unsigned short i=0; i<(this->inputs.size()); ++i ){
         sf::Sprite* sprite = inputs[i]->getSprite();
         sprite->setPosition(0, marginY);
-        this->window->draw(*sprite);
+        //  in case it is selected components we highlight it
+        if(this->navigationLevel == 0 && this->selectLevel == i)
+            sprite->setColor(sf::Color::White);
 
+        this->window->draw(*sprite);
         //update margin 
         marginY += 64*sprite->getScale().y + 10;
 
@@ -379,12 +405,17 @@ void Simulation::render(){
     for(unsigned short lvl=0; lvl<(this->gates.size()); ++lvl){
         marginY = this->toolbar->getSize().y + 10;
 
-        unsigned short counter = 1;
+        unsigned short counter = 0;
         for(Gate* gate: this->gates[lvl]){
             sf::Sprite* sprite = gate->getSprite();
             sprite->setPosition(marginX, marginY);
-            this->window->draw(*sprite);
 
+            // heighlight selection
+            if(this->navigationLevel == (lvl+1)  &&  (this->selectLevel == counter) )
+                sprite->setColor(sf::Color::Black);
+
+
+            this->window->draw(*sprite);
             //update margin
             marginY+= 64*sprite->getScale().y + 10;
 

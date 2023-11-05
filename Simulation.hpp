@@ -111,6 +111,19 @@ class Input{
         sf::Sprite* getSprite();
 };
 
+class Output{
+    private:
+        bool value;
+
+        sf::Texture texture;
+        sf::Sprite sprite;
+    
+    public:
+        void setValue(bool val);
+
+        sf::Sprite* getSprite();
+};
+
 
 class Simulation{
     private:
@@ -136,7 +149,7 @@ class Simulation{
 
         //represent the current depth level of the circuit
         unsigned short navigationLevel;
-
+        unsigned short selectLevel; //used to navigate up and down to select components
         
         //a vector of inputs (level 1 logic components)
         std::vector<Input*> inputs;
@@ -159,7 +172,13 @@ class Simulation{
 
         void scaleBy(float deltaX, float deltaY);
 
+        void simulate();
+
         bool isRunning();
+
+        //return the length of current column vector
+        unsigned short getCurrentLength();
+
 
         void pollEvents();
 
