@@ -8,16 +8,29 @@ using namespace sm;
 
 
 Button::Button(){
+    width = 100;
+    height = 30;
+
     this->callback = nullptr;
-    width = 50;
-    height = 20;
     this->buttonArea = new sf::RectangleShape(sf::Vector2f(width,height));
-    this->buttonArea->setFillColor(sf::Color::Red);
+    this->buttonArea->setFillColor(sf::Color::Black);
+
+
 }
 
 template<typename... Args>
 void Button::init(std::string text, void(*cb)(Args...), Args... args){
     this->text = text;
+    
+    if(!this->font.loadFromFile("BrickSans-Bold.otf"))
+        std::cout << "Unable to load font" << std::endl;
+    this->textobj.setFont(font);
+    this->textobj.setString(this->text);
+    this->textobj.setCharacterSize(20);
+    this->textobj.setPosition(this->getPos());
+    this->textobj.setFillColor(sf::Color(126,217,87));
+
+
     this->callback = std::bind(cb,args...);
 }
 
@@ -31,12 +44,14 @@ bool Button::setPos(sf::Vector2f pos){
 
     this->buttonArea->setPosition(pos);
 
+    this->textobj.setPosition(pos);
+
     //indicate success
     return true;
 };
 
-sf::Vector2i Button::getPos(){
-    return sf::Vector2i(this->x,this->y);
+sf::Vector2f Button::getPos(){
+    return sf::Vector2f(this->x,this->y);
 }
 
 bool Button::isClicked(sf::Vector2f pos){
@@ -56,6 +71,10 @@ sf::RectangleShape Button::getButtonArea(){
 
 std::string Button::getText(){
     return this->text;
+}
+
+sf::Text Button::getTextObj(){
+    return this->textobj;
 }
 //Toolbar Definitions
 
@@ -80,29 +99,38 @@ void addPrint(int a, int b){
     std::cout<< a+b << std::endl;
 }
 
+
+void Simulation::initBtns(){
+    this->fileBtn->init("File", print, 3);
+    this->fileBtn->setPos(sf::Vector2f(50,10));
+
+    this->editBtn->init("Edit", addPrint, 10 ,5);
+    this->editBtn->setPos(sf::Vector2f(150,10));
+}
+
 void Simulation::initVars(){
-    this->window = nullptr;
-    this->button.init("Hello world", print, 3);
-    this->button.setPos(sf::Vector2f(250,0));
-    
-    //this->button2.init("Second",addPrint, 10 , 5);
-    //this->button2.setPos(sf::Vector2f(100,0));
+
+    this->toolbar = new sf::RectangleShape(sf::Vector2f(this->VideoMode.width,0.08*this->VideoMode.height));
+    this->toolbar->setFillColor(sf::Color::Black);
+    this->toolbar->setPosition(sf::Vector2f(0,0));
+
+    this->initBtns();
 }
 
 void Simulation::initWindow(){
-    this->VideoMode.width = 500;
-    this->VideoMode.height = 500;
+    this->VideoMode.width = 1000;
+    this->VideoMode.height = 750;
 
-    this->window = new sf::RenderWindow(this->VideoMode, "Test", sf::Style::Close | sf::Style::Titlebar);
+    this->window = new sf::RenderWindow(this->VideoMode, "Circuit Simulation", sf::Style::Close | sf::Style::Titlebar);
     this->window->setFramerateLimit(120);
 }
 
 
 
 Simulation::Simulation(){
-    this->initVars();
-
     this->initWindow();
+
+    this->initVars();
 }
 
 Simulation::~Simulation(){
@@ -124,7 +152,7 @@ void Simulation::pollEvents(){
                 if(this->event.key.code == sf::Keyboard::Escape){
                     this->window->close();
                     break;
-                };
+                }
                 break;
             case sf::Event::MouseButtonReleased:
                 //catch the mouseButton event
@@ -133,10 +161,10 @@ void Simulation::pollEvents(){
                 sf::Mouse::Button btn = mouseEvent.button;
                 //if left button clicked and window button clicked
                 if( (btn == sf::Mouse::Button::Left) ){
-                    if(this->button.isClicked(sf::Vector2f(mouseEvent.x, mouseEvent.y) ))
-                        this->button.Click();
-                    //else if(this->button2.isClicked(sf::Vector2f(mouseEvent.x, mouseEvent.y) ))
-                       // this->button2.Click();
+                    if(this->fileBtn->isClicked(sf::Vector2f(mouseEvent.x, mouseEvent.y) ))
+                        this->fileBtn->Click();
+                    else if(this->editBtn->isClicked(sf::Vector2f(mouseEvent.x, mouseEvent.y) ))
+                        this->editBtn->Click();
                 }
         }
 
@@ -149,12 +177,15 @@ void Simulation::update(){
 }
 
 void Simulation::render(){
-    this->window->clear(sf::Color::Blue);
+    this->window->clear(sf::Color(55,40,33));
 
-    this->button.setPos(sf::Vector2f(0,30));
-    this->window->draw(this->button.getButtonArea());
+    this->window->draw(*(this->toolbar) );
 
-    //this->window->draw(this->button2.getButtonArea());
+    this->window->draw(this->fileBtn->getButtonArea());
+    this->window->draw(this->fileBtn->getTextObj());
+
+    this->window->draw(this->editBtn->getButtonArea());
+    this->window->draw(this->editBtn->getTextObj());
 
     this->window->display();
 }
