@@ -8,23 +8,17 @@ using namespace sm;
 
 
 Button::Button(){
+    this->callback = nullptr;
     width = 50;
     height = 20;
-    this->text = "Hello world";
     this->buttonArea = new sf::RectangleShape(sf::Vector2f(width,height));
     this->buttonArea->setFillColor(sf::Color::Red);
 }
 
-//template <typename ...CallbackArgs>
-/*Button::Button(std::string text,Callback cb): callback(cb) {
-    width = 10;
-    height = 10;
-
+void Button::init(std::string text, void(*cb)(int),int a){
     this->text = text;
-
-    this->buttonArea = new sf::RectangleShape(sf::Vector2f(width,height));
-
-};*/
+    this->callback = std::bind(cb, a);
+}
 
 Button::~Button(){
     delete this->buttonArea;
@@ -45,12 +39,10 @@ sf::Vector2i Button::getPos(){
 }
 
 bool Button::isClicked(sf::Vector2f pos){
-    std::cout << this->x << ',' << this->y << std::endl;
     return ( (pos.x>=this->x) && (pos.x<=(this->x+this->width) ) && (pos.y>=this->y)&& (pos.y<=(this->y+this->height) ) );
 }
 
-
-void Button::onClick(){
+void Button::Click(){
     if(this->callback)
         this->callback();
 }
@@ -78,15 +70,14 @@ std::string Button::getText(){
 
 
 //  Simulation Definition
-void print(){
-    std::cout << "Hello world" << std::endl;
+
+void print(int a){
+    std::cout << a << std::endl;
 }
-
-
 
 void Simulation::initVars(){
     this->window = nullptr;
-    //this->button = Button("Hello",print);
+    this->button.init("Hello world", print, 3);
 }
 
 void Simulation::initWindow(){
@@ -132,9 +123,8 @@ void Simulation::pollEvents(){
                 //get the Button of the event
                 sf::Mouse::Button btn = mouseEvent.button;
                 //if left button clicked and window button clicked
-                std::cout << mouseEvent.x << ',' << mouseEvent.y << std::endl;
                 if( (btn == sf::Mouse::Button::Left) && (this->button.isClicked(sf::Vector2f(mouseEvent.x, mouseEvent.y) ))){
-                    std::cout << this->button.getText() << std::endl;
+                    this->button.Click();
                 }
         }
 

@@ -12,10 +12,6 @@
 namespace sm{
 
 
-//template <typename ...CallbackArgs>
-//using Callback = void(*)(CallbackArgs...);
-
-
 class Button{
     private:
         unsigned short width;
@@ -25,22 +21,16 @@ class Button{
         std::string text;
         int x,y;
 
-        //Callback<> callback;
-        using Callback = void(*)();
-        Callback callback;
+        std::function<void()> callback;
 
     public:
         //Constructors and Destructors
         Button();
 
-        //template <typename ...CallbackArgs>
-        Button(std::string text,Callback cb);
-
-        /*template<typename ...Args>
-        Button(std::string, sf::Font& font, Args... args);*/
-        
         ~Button();
         // State functions
+        void init(std::string text, void(*cb)(int),int a);
+
         bool setPos(sf::Vector2f pos);
 
         sf::Vector2i getPos();
@@ -48,6 +38,9 @@ class Button{
         bool isClicked(sf::Vector2f pos);
 
         void onClick();
+
+        
+        void Click();
 
         sf::RectangleShape getButtonArea();
 
