@@ -100,13 +100,16 @@ Gate::Gate(GateType type){
         break;
     case AND:
         this->texture.loadFromFile("assets/and-gate.png");
+        break;
     case OR:
         this->texture.loadFromFile("assets/or-gate.png");
+        break;
     case XOR:
         this->texture.loadFromFile("assets/xor-gate.png");
+        break;
+    }
     
     this->sprite.setTexture(this->texture);
-}
 
 }
 
@@ -141,7 +144,9 @@ sf::Sprite* Gate::getSprite(){
     return &(this->sprite);
 }
 
-
+Gate::GateType Gate::getType(){
+    return this->type;
+}
 
 
 
@@ -171,6 +176,7 @@ void Simulation::initBtns(){
 }
 
 void Simulation::initVars(){
+    this->navigationLevel = 0;
 
     this->toolbar = new sf::RectangleShape(sf::Vector2f(this->VideoMode.width,0.08*this->VideoMode.height));
     this->toolbar->setFillColor(sf::Color::Black);
@@ -199,23 +205,54 @@ Simulation::~Simulation(){
     delete this->window;
 }
 
+//Simulation Logic functions
+
+void Simulation::addInput(Input* input){
+    this->inputs.push_back(input);
+}
+
+void Simulation::addGate(Gate* gate, unsigned short level){
+    if(level>=1)
+        this->gates[level-1].push_back(gate);
+}
 
 bool Simulation::isRunning(){
     return this->window->isOpen();
 }
 
+
+
+
+
+
 void Simulation::pollEvents(){
     while(this->window->pollEvent(this->event)){
         switch(this->event.type){
+            // Close Event
             case sf::Event::Closed:
                 this->window->close();
                 break;
+            // Keypress Event
             case sf::Event::KeyPressed :
                 if(this->event.key.code == sf::Keyboard::Escape){
                     this->window->close();
                     break;
+                }else if(this->event.key.code == sf::Keyboard::Add){
+                    std::cout << "Add" << std::endl;
+                    this->navigationLevel++;
+                    std::cout << this->gates.size() << std::endl;
+                    if(this->navigationLevel > this->gates.size())
+                        gates.push_back(std::vector<Gate*>());
+                    break;
+                }
+                else if(this->event.key.code == sf::Keyboard::A){
+                    std::cout << "and gate" << std::endl;
+                    Gate* gate = new Gate(Gate::AND);
+                    this->addGate(gate,this->navigationLevel);
+                    break;
                 }
                 break;
+                // MouseClick Event
             case sf::Event::MouseButtonReleased:
                 //catch the mouseButton event
                 sf::Event::MouseButtonEvent mouseEvent = this->event.mouseButton;
@@ -239,32 +276,23 @@ void Simulation::update(){
 }
 
 void Simulation::render(){
-    sf::Texture img;
-    if(!img.loadFromFile("assets/not-gate.png"))
-        std::cout << "Could not load image" << std::endl;
-
-    sf::Sprite sprite;
-    sprite.setTexture(img);
-    sprite.setPosition(400,300);
-
-    sf::Texture img2;
-    if(!img2.loadFromFile("assets/xor-gate.png"))
-        std::cout << "Could not load image" << std::endl;
-
-    sf::Sprite sprite2;
-    sprite2.setTexture(img2);
-    sprite2.setPosition(0,300);
-
-
-
-
 
     this->window->clear(sf::Color(34, 34, 34));
-
-    this->window->draw(sprite);
-    this->window->draw(sprite2);
-
     this->window->draw(*(this->toolbar) );
+
+    // Draw Gates
+    for(unsigned short lvl=0; lvl<(this->gates.size()); ++lvl){
+        unsigned short counter = 1;
+        for(Gate* gate: this->gates[lvl]){
+            std::cout << lvl+1 << ": " << gate->getType() << std::endl;
+            sf::Sprite* sprite = gate->getSprite();
+            sprite->setPosition(100*lvl, 50*counter);
+            this->window->draw(*sprite);
+            
+            ++counter;
+        }
+    }
+
 
     this->window->draw(this->fileBtn->getButtonArea());
     this->window->draw(this->fileBtn->getTextObj());
@@ -274,4 +302,3 @@ void Simulation::render(){
 
     this->window->display();
 }
-

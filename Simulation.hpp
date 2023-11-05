@@ -81,6 +81,7 @@ class Gate{
 
         sf::Sprite* getSprite();
 
+        GateType getType();
     private:
         GateType type;
 
@@ -122,6 +123,13 @@ class Simulation{
         Button* viewBtn = new Button();
         Button* helpBtn = new Button();
 
+        //represent the current depth level of the circuit
+        unsigned short navigationLevel;
+        //a vector of inputs (level 1 logic components)
+        std::vector<Input*> inputs;
+        //a vector of levels(of gates) ; each level represent a depth in the circuit
+        std::vector<std::vector<Gate*>> gates;
+
     public:
         //Constructors and Destructors
         Simulation();
@@ -130,10 +138,12 @@ class Simulation{
 
 
         void initBtns();
-
         void initVars();
-
         void initWindow();
+        //Logic functions
+        void addInput(Input* input);
+        void addGate(Gate* gate, unsigned short level);
+
 
         bool isRunning();
 
@@ -142,5 +152,8 @@ class Simulation{
         void update();
 
         void render();
+
+
+
 };
 }
