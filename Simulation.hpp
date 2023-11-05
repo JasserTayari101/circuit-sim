@@ -7,7 +7,7 @@
 #include <string>
 #include <functional>
 #include <iostream>
-
+#include <vector>
 
 namespace sm{
 
@@ -56,6 +56,36 @@ class Button{
 };
 
 
+
+//Gate class that represent all logic gates AND / OR / XOR / NOT
+
+
+class Gate{
+    
+    public:
+        enum GateType{
+            NOT,
+            AND,
+            OR,
+            XOR
+        };
+    
+
+        Gate(GateType type);
+
+        //operate on input
+        bool operate(bool in1, bool in2);
+
+        //link two gates
+        bool link(Gate* otherGate);
+
+    private:
+        GateType type;
+        
+        //links to all other gates except self
+        std::vector<Gate*> links;
+
+};
 
 
 

@@ -22,7 +22,7 @@ template<typename... Args>
 void Button::init(std::string text, void(*cb)(Args...), Args... args){
     this->text = text;
     
-    if(!this->font.loadFromFile("BrickSans-Bold.otf"))
+    if(!this->font.loadFromFile("assets/BrickSans-Bold.otf"))
         std::cout << "Unable to load font" << std::endl;
     this->textobj.setFont(font);
     this->textobj.setString(this->text);
@@ -76,11 +76,36 @@ std::string Button::getText(){
 sf::Text Button::getTextObj(){
     return this->textobj;
 }
-//Toolbar Definitions
+//--- Gate Definitions ----
 
 
+Gate::Gate(GateType type){
+    this->type = type;
+}
 
+bool Gate::operate(bool in1, bool in2=false){
+    switch(this->type){
+        case NOT:
+            return !in1;
+        case AND:
+            return in1&&in2;
+        case OR:
+            return in1 || in2;
+        case XOR:
+            return in1!=in2;
+        default:
+            return false;
+    }
+}
 
+bool Gate::link(Gate* otherGate){
+    if(this == otherGate)
+        return false;
+    else{
+        this->links.push_back(otherGate);
+        return true;
+    }
+}
 
 
 
@@ -99,12 +124,16 @@ void addPrint(int a, int b){
     std::cout<< a+b << std::endl;
 }
 
+void printText(Button* btn){
+    std::cout << btn->getText() << std::endl;
+}
+
 
 void Simulation::initBtns(){
-    this->fileBtn->init("File", print, 3);
+    this->fileBtn->init("File", printText,this->fileBtn);
     this->fileBtn->setPos(sf::Vector2f(50,10));
 
-    this->editBtn->init("Edit", addPrint, 10 ,5);
+    this->editBtn->init("Edit", printText, this->editBtn);
     this->editBtn->setPos(sf::Vector2f(150,10));
 }
 
@@ -177,7 +206,18 @@ void Simulation::update(){
 }
 
 void Simulation::render(){
-    this->window->clear(sf::Color(55,40,33));
+    sf::Texture img;
+    if(!img.loadFromFile("assets/not-gate.png"))
+        std::cout << "Could not load image" << std::endl;
+
+    sf::Sprite sprite;
+    sprite.scale(0.3,0.3);
+    sprite.setTexture(img);
+    sprite.setPosition(500,300);
+
+    this->window->clear(sf::Color(34, 34, 34));
+
+    this->window->draw(sprite);
 
     this->window->draw(*(this->toolbar) );
 
