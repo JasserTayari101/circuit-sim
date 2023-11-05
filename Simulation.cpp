@@ -76,13 +76,41 @@ std::string Button::getText(){
 sf::Text Button::getTextObj(){
     return this->textobj;
 }
-//--- Gate Definitions ----
 
+//---- Input Definitions ----
 
-Gate::Gate(GateType type){
-    this->type = type;
+Input::Input(bool val){
+    this->value = val;
 }
 
+bool Input::link(Gate* gate){
+    this->links.push_back(gate);
+    return true;
+}
+
+
+
+//--- Gate Definitions ----
+Gate::Gate(GateType type){
+    this->type = type;
+
+    switch(type){
+    case NOT:
+        this->texture.loadFromFile("assets/not-gate.png");
+        break;
+    case AND:
+        this->texture.loadFromFile("assets/and-gate.png");
+    case OR:
+        this->texture.loadFromFile("assets/or-gate.png");
+    case XOR:
+        this->texture.loadFromFile("assets/xor-gate.png");
+    
+    this->sprite.setTexture(this->texture);
+}
+
+}
+
+//process input through gate
 bool Gate::operate(bool in1, bool in2=false){
     switch(this->type){
         case NOT:
@@ -98,6 +126,7 @@ bool Gate::operate(bool in1, bool in2=false){
     }
 }
 
+// link two gates
 bool Gate::link(Gate* otherGate){
     if(this == otherGate)
         return false;
@@ -107,6 +136,10 @@ bool Gate::link(Gate* otherGate){
     }
 }
 
+
+sf::Sprite* Gate::getSprite(){
+    return &(this->sprite);
+}
 
 
 
@@ -211,13 +244,25 @@ void Simulation::render(){
         std::cout << "Could not load image" << std::endl;
 
     sf::Sprite sprite;
-    sprite.scale(0.3,0.3);
     sprite.setTexture(img);
-    sprite.setPosition(500,300);
+    sprite.setPosition(400,300);
+
+    sf::Texture img2;
+    if(!img2.loadFromFile("assets/xor-gate.png"))
+        std::cout << "Could not load image" << std::endl;
+
+    sf::Sprite sprite2;
+    sprite2.setTexture(img2);
+    sprite2.setPosition(0,300);
+
+
+
+
 
     this->window->clear(sf::Color(34, 34, 34));
 
     this->window->draw(sprite);
+    this->window->draw(sprite2);
 
     this->window->draw(*(this->toolbar) );
 
@@ -229,3 +274,4 @@ void Simulation::render(){
 
     this->window->display();
 }
+

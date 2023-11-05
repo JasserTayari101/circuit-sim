@@ -79,8 +79,14 @@ class Gate{
         //link two gates
         bool link(Gate* otherGate);
 
+        sf::Sprite* getSprite();
+
     private:
         GateType type;
+
+        //depending on the type of the gate
+        sf::Texture texture;
+        sf::Sprite sprite;
         
         //links to all other gates except self
         std::vector<Gate*> links;
@@ -88,6 +94,17 @@ class Gate{
 };
 
 
+
+class Input{
+    private:
+        bool value;
+        std::vector<Gate*> links;
+    
+    public:
+        Input(bool val);
+
+        bool link(Gate* gate);
+};
 
 
 class Simulation{
