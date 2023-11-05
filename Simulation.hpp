@@ -101,10 +101,14 @@ class Input{
         bool value;
         std::vector<Gate*> links;
     
+        sf::Texture texture;
+        sf::Sprite sprite;
     public:
         Input(bool val);
 
         bool link(Gate* gate);
+
+        sf::Sprite* getSprite();
 };
 
 
@@ -123,8 +127,17 @@ class Simulation{
         Button* viewBtn = new Button();
         Button* helpBtn = new Button();
 
+        //represent maximum depth of circuit
+        unsigned short depth;
+
+        //represent componnets default scale
+        float scaleX;
+        float scaleY;
+
         //represent the current depth level of the circuit
         unsigned short navigationLevel;
+
+        
         //a vector of inputs (level 1 logic components)
         std::vector<Input*> inputs;
         //a vector of levels(of gates) ; each level represent a depth in the circuit
@@ -144,6 +157,7 @@ class Simulation{
         void addInput(Input* input);
         void addGate(Gate* gate, unsigned short level);
 
+        void scaleBy(float deltaX, float deltaY);
 
         bool isRunning();
 
@@ -152,8 +166,6 @@ class Simulation{
         void update();
 
         void render();
-
-
 
 };
 }

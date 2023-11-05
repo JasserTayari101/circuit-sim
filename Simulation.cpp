@@ -81,6 +81,13 @@ sf::Text Button::getTextObj(){
 
 Input::Input(bool val){
     this->value = val;
+
+    if(val){
+        this->texture.loadFromFile("assets/circle-1.png");
+    }else
+        this->texture.loadFromFile("assets/circle-0.png");
+
+    this->sprite.setTexture(this->texture);
 }
 
 bool Input::link(Gate* gate){
@@ -88,6 +95,9 @@ bool Input::link(Gate* gate){
     return true;
 }
 
+sf::Sprite* Input::getSprite(){
+    return &(this->sprite);
+}
 
 
 //--- Gate Definitions ----
@@ -176,6 +186,11 @@ void Simulation::initBtns(){
 }
 
 void Simulation::initVars(){
+    this->depth = 0;
+
+    this->scaleX = 1;
+    this->scaleY = 1;
+
     this->navigationLevel = 0;
 
     this->toolbar = new sf::RectangleShape(sf::Vector2f(this->VideoMode.width,0.08*this->VideoMode.height));
@@ -216,6 +231,34 @@ void Simulation::addGate(Gate* gate, unsigned short level){
         this->gates[level-1].push_back(gate);
 }
 
+// Scale all components either bigger or smaller
+void Simulation::scaleBy(float deltaX, float deltaY){
+    // update default scale
+    this->scaleX += deltaX;
+    this->scaleY += deltaY;
+
+
+    //Scale all components
+    for(Input* input: this->inputs){
+        sf::Sprite* sprite;
+        sprite = input->getSprite();
+        
+        sprite->setScale(this->scaleX, this->scaleY);
+    }
+
+    for(int i=0; i<(this->gates.size()); ++i){
+        for(Gate* gate: this->gates[i]){
+            sf::Sprite* sprite;
+            sprite = gate->getSprite();
+            
+            sprite->setScale(this->scaleX, this->scaleY);
+        }
+    }
+
+}
+
+
+
 bool Simulation::isRunning(){
     return this->window->isOpen();
 }
@@ -237,20 +280,48 @@ void Simulation::pollEvents(){
                 if(this->event.key.code == sf::Keyboard::Escape){
                     this->window->close();
                     break;
-                }else if(this->event.key.code == sf::Keyboard::Add){
-                    std::cout << "Add" << std::endl;
-                    this->navigationLevel++;
-                    std::cout << this->gates.size() << std::endl;
-                    if(this->navigationLevel > this->gates.size())
-                        gates.push_back(std::vector<Gate*>());
+                }else if(this->event.key.code == sf::Keyboard::C){
+                    // Increment the depth of circuit by one
+                    ++depth; 
+                    gates.push_back(std::vector<Gate*>());
                     break;
                 }
-                else if(this->event.key.code == sf::Keyboard::A){
-                    std::cout << "and gate" << std::endl;
-                    Gate* gate = new Gate(Gate::AND);
+                // add gate A->AND, O->OR, X->XOR, N->NOT
+                else if(this->event.key.code == sf::Keyboard::A || this->event.key.code == sf::Keyboard::O || this->event.key.code == sf::Keyboard::X || this->event.key.code == sf::Keyboard::N){
+                    Gate* gate;
+                    if(this->event.key.code == sf::Keyboard::A)
+                        gate = new Gate(Gate::AND);
+                    else if(this->event.key.code == sf::Keyboard::O)
+                        gate = new Gate(Gate::OR);
+                    else if(this->event.key.code == sf::Keyboard::X)
+                        gate = new Gate(Gate::XOR);
+                    else if(this->event.key.code == sf::Keyboard::N)
+                        gate = new Gate(Gate::NOT);
+                    
                     this->addGate(gate,this->navigationLevel);
                     break;
+                // If use press 1 or 0 : add Input component in case we are at circuit depth 0
+                }else if(this->event.key.code == sf::Keyboard::Num0 || this->event.key.code == sf::Keyboard::Num1){
+                    if(this->navigationLevel == 0){
+                        Input* input = new Input(this->event.key.code == sf::Keyboard::Num1);
+                        this->addInput(input);
+                    }
                 }
+                // Handle Arrow for Navigation
+                else if(this->event.key.code == sf::Keyboard::Left || this->event.key.code == sf::Keyboard::Right){
+                    if(this->event.key.code == sf::Keyboard::Left && (this->navigationLevel>0) )
+                        this->navigationLevel--;
+                    else if(this->event.key.code == sf::Keyboard::Right && (this->navigationLevel< this->depth ) )
+                        this->navigationLevel++;
+                }
+                // Handle Zoom In/out (+/-)
+                else if(this->event.key.code == sf::Keyboard::Add || this->event.key.code == sf::Keyboard::Subtract ){
+                    if(this->event.key.code == sf::Keyboard::Add)
+                        this->scaleBy(0.1,0.1);
+                    else
+                        this->scaleBy(-0.1,-0.1);
+                }
+
                 break;
                 // MouseClick Event
             case sf::Event::MouseButtonReleased:
@@ -280,13 +351,21 @@ void Simulation::render(){
     this->window->clear(sf::Color(34, 34, 34));
     this->window->draw(*(this->toolbar) );
 
+    //Draw Inputs
+    for(unsigned short i=0; i<(this->inputs.size()); ++i ){
+        sf::Sprite* sprite = inputs[i]->getSprite();
+        sprite->setPosition(0, 70*(i+1) );
+
+        this->window->draw(*sprite);
+    }
+
+
     // Draw Gates
     for(unsigned short lvl=0; lvl<(this->gates.size()); ++lvl){
         unsigned short counter = 1;
         for(Gate* gate: this->gates[lvl]){
-            std::cout << lvl+1 << ": " << gate->getType() << std::endl;
             sf::Sprite* sprite = gate->getSprite();
-            sprite->setPosition(100*lvl, 50*counter);
+            sprite->setPosition(100*(lvl+1), 50*counter);
             this->window->draw(*sprite);
             
             ++counter;
