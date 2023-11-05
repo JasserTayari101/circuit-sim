@@ -29,7 +29,8 @@ class Button{
 
         ~Button();
         // State functions
-        void init(std::string text, void(*cb)(int),int a);
+        template <typename... Args>
+        void init(std::string text, void(*cb)(Args... args),Args... args);
 
         bool setPos(sf::Vector2f pos);
 
@@ -76,6 +77,7 @@ class Simulation{
 
         //Toolbar toolbar;
         Button button;
+        //Button button2;
 
     public:
         //Constructors and Destructors

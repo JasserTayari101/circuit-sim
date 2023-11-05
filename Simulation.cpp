@@ -15,9 +15,10 @@ Button::Button(){
     this->buttonArea->setFillColor(sf::Color::Red);
 }
 
-void Button::init(std::string text, void(*cb)(int),int a){
+template<typename... Args>
+void Button::init(std::string text, void(*cb)(Args...), Args... args){
     this->text = text;
-    this->callback = std::bind(cb, a);
+    this->callback = std::bind(cb,args...);
 }
 
 Button::~Button(){
@@ -75,16 +76,24 @@ void print(int a){
     std::cout << a << std::endl;
 }
 
+void addPrint(int a, int b){
+    std::cout<< a+b << std::endl;
+}
+
 void Simulation::initVars(){
     this->window = nullptr;
     this->button.init("Hello world", print, 3);
+    this->button.setPos(sf::Vector2f(250,0));
+    
+    //this->button2.init("Second",addPrint, 10 , 5);
+    //this->button2.setPos(sf::Vector2f(100,0));
 }
 
 void Simulation::initWindow(){
     this->VideoMode.width = 500;
     this->VideoMode.height = 500;
 
-    this->window = new sf::RenderWindow(this->VideoMode, "Test", sf::Style::Default);
+    this->window = new sf::RenderWindow(this->VideoMode, "Test", sf::Style::Close | sf::Style::Titlebar);
     this->window->setFramerateLimit(120);
 }
 
@@ -123,8 +132,11 @@ void Simulation::pollEvents(){
                 //get the Button of the event
                 sf::Mouse::Button btn = mouseEvent.button;
                 //if left button clicked and window button clicked
-                if( (btn == sf::Mouse::Button::Left) && (this->button.isClicked(sf::Vector2f(mouseEvent.x, mouseEvent.y) ))){
-                    this->button.Click();
+                if( (btn == sf::Mouse::Button::Left) ){
+                    if(this->button.isClicked(sf::Vector2f(mouseEvent.x, mouseEvent.y) ))
+                        this->button.Click();
+                    //else if(this->button2.isClicked(sf::Vector2f(mouseEvent.x, mouseEvent.y) ))
+                       // this->button2.Click();
                 }
         }
 
@@ -141,6 +153,8 @@ void Simulation::render(){
 
     this->button.setPos(sf::Vector2f(0,30));
     this->window->draw(this->button.getButtonArea());
+
+    //this->window->draw(this->button2.getButtonArea());
 
     this->window->display();
 }
