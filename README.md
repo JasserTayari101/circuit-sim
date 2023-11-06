@@ -1,4 +1,4 @@
-Circuit Simulator on top of SFML
+# Circuit Simulator on top of SFML
 
 # Description:
 - Made of a Toolbar for additional functionalities
