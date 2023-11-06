@@ -1,4 +1,6 @@
 # Circuit Simulator on top of SFML
+Digital Circuit Simulator Program built on top of SFML that I built myself as a companion for my computer architecture CS course.
+Will support many features related to boolean algebra in the future
 
 # Description:
 - Made of a Toolbar for additional functionalities
